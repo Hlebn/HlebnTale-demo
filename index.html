@@ -85,27 +85,62 @@
     </div>
 
     <script>
-        function getMoscowTarget() {
-            const now = new Date();
-            const mskDateString = now.toLocaleDateString("en-US", { timeZone: "Europe/Moscow" });
-            const target = new Date(`${mskDateString} 18:00:00 GMT+0300`);
-            
-            if (now.getTime() >= target.getTime()) {
-                target.setDate(target.getDate() + 1);
+        let serverTimeOffset = 0;
+        let targetTime = 0;
+        let timerInterval = null;
+
+        async function initTimer() {
+            try {
+                const response = await fetch('https://worldtimeapi.org/api/timezone/Europe/Moscow');
+                const data = await response.json();
+                
+                const serverTime = new Date(data.datetime).getTime();
+                serverTimeOffset = serverTime - Date.now();
+
+                const mskDate = new Date(data.datetime);
+                const year = mskDate.getFullYear();
+                const month = String(mskDate.getMonth() + 1).padStart(2, '0');
+                const day = String(mskDate.getDate()).padStart(2, '0');
+                
+                let target = new Date(`${year}-${month}-${day}T18:00:00+03:00`).getTime();
+                
+                if (serverTime >= target) {
+                    const tomorrow = new Date(serverTime + 86400000);
+                    const tYear = tomorrow.getFullYear();
+                    const tMonth = String(tomorrow.getMonth() + 1).padStart(2, '0');
+                    const tDay = String(tomorrow.getDate()).padStart(2, '0');
+                    target = new Date(`${tYear}-${tMonth}-${tDay}T18:00:00+03:00`).getTime();
+                }
+
+                targetTime = target;
+                updateTimer();
+                timerInterval = setInterval(updateTimer, 1000);
+            } catch (error) {
+                const now = new Date();
+                const mskDateString = now.toLocaleDateString("en-US", { timeZone: "Europe/Moscow" });
+                const target = new Date(`${mskDateString} 18:00:00 GMT+0300`);
+                
+                if (now.getTime() >= target.getTime()) {
+                    target.setDate(target.getDate() + 1);
+                }
+                targetTime = target.getTime();
+                serverTimeOffset = 0;
+                
+                updateTimer();
+                timerInterval = setInterval(updateTimer, 1000);
             }
-            return target.getTime();
         }
 
-        const targetTime = getMoscowTarget();
-
         function updateTimer() {
-            const now = new Date().getTime();
+            if (!targetTime) return;
+
+            const now = Date.now() + serverTimeOffset;
             const distance = targetTime - now;
 
             if (distance <= 0) {
                 document.getElementById("countdown-box").style.display = "none";
                 document.getElementById("finish-message").style.display = "block";
-                clearInterval(timerInterval);
+                if (timerInterval) clearInterval(timerInterval);
                 return;
             }
 
@@ -120,8 +155,7 @@
             document.getElementById("timer").innerText = `${hDisplay}:${mDisplay}:${sDisplay}`;
         }
 
-        updateTimer();
-        const timerInterval = setInterval(updateTimer, 1000);
+        initTimer();
     </script>
 </body>
 </html>
