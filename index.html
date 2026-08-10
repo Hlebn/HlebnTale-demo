@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HlebnTale — Скоро выйдет демо!</title>
-    <!-- Пиксельный шрифт Undertale/Retro -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -45,7 +44,7 @@
 
         .timer {
             font-size: 32px;
-            color: #ffff00; /* Подсветка жёлтым в стиле Undertale */
+            color: #ffff00;
             letter-spacing: 2px;
             margin-top: 10px;
             text-shadow: 3px 3px #888800;
@@ -64,7 +63,6 @@
             100% { opacity: 1; transform: scale(1.02); }
         }
 
-        /* Адаптивность под мобильные телефоны */
         @media (max-width: 600px) {
             .container { padding: 20px; border-width: 3px; }
             .title { font-size: 12px; }
@@ -87,38 +85,11 @@
     </div>
 
     <script>
-        // Функция получения целевого времени (Сегодня 13:00 МСК)
-        function getTargetTime() {
-            const now = new Date();
-            
-            // Преобразуем текущее время в MSK (UTC+3)
-            // Создаем объект даты для 13:00 по МСК на сегодняшнее число
-            const target = new Date();
-            
-            // Если нужно конкретную дату, укажи вручную (Год, Месяц-1, День, Часы, Минуты)
-            // Например для сегодня:
-            target.setHours(13, 0, 0, 0); 
-
-            // Перевод часов с учетом МСК (UTC+3)
-            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-            const mskNow = new Date(utc + (3600000 * 3));
-
-            // Если 13:00 МСК сегодня уже прошло, ставим на 13:00 завтрашнего дня
-            if (mskNow > target) {
-                target.setDate(target.getDate() + 1);
-            }
-
-            return target.getTime();
-        }
-
-        // Указываем целевое время (13:00 по Москве = 10:00 UTC)
         function getMoscowTarget() {
             const now = new Date();
-            // Получаем год, месяц, день по Москве
             const mskDateString = now.toLocaleDateString("en-US", { timeZone: "Europe/Moscow" });
-            const target = new Date(`${mskDateString} 13:00:00 GMT+0300`);
+            const target = new Date(`${mskDateString} 18:00:00 GMT+0300`);
             
-            // Если 13:00 сегодня по МСК уже прошло — ставим 13:00 завтра
             if (now.getTime() >= target.getTime()) {
                 target.setDate(target.getDate() + 1);
             }
@@ -132,19 +103,16 @@
             const distance = targetTime - now;
 
             if (distance <= 0) {
-                // Таймер окончен
                 document.getElementById("countdown-box").style.display = "none";
                 document.getElementById("finish-message").style.display = "block";
                 clearInterval(timerInterval);
                 return;
             }
 
-            // Расчет часов, минут и секунд
             const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-            // Форматирование с ведущими нулями (01:05:09)
             const hDisplay = String(hours).padStart(2, '0');
             const mDisplay = String(minutes).padStart(2, '0');
             const sDisplay = String(seconds).padStart(2, '0');
@@ -152,7 +120,6 @@
             document.getElementById("timer").innerText = `${hDisplay}:${mDisplay}:${sDisplay}`;
         }
 
-        // Запуск и обновление каждую секунду
         updateTimer();
         const timerInterval = setInterval(updateTimer, 1000);
     </script>
